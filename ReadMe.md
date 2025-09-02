@@ -1,4 +1,4 @@
-# 💔 Divorce Rates in Israel: Demographic Analysis with R
+# Divorce Rates in Israel: Demographic Analysis with R
 This project demonstrates a complete data analysis pipeline for understanding divorce patterns across Israeli cities using advanced R statistical methods.
 
 ---
@@ -10,11 +10,6 @@ We collect, analyze, and visualize Israeli municipal data using:
 - **ggplot2** (advanced data visualization)
 - **tidyverse** (data manipulation & cleaning)
 - **Multiple Gov.il datasets** (official government sources)
-
----
-
-## 🗺️ Analysis Architecture
-![Analysis Pipeline](figures/analysis_pipeline.png)
 
 ---
 
