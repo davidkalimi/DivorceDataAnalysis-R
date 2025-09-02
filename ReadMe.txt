@@ -1,132 +1,204 @@
-# Divorce Data Analysis in R
+# Divorce Rates in Israel: A Demographic and Cultural Analysis
 
-This project explores the demographic, socioeconomic, and cultural factors that influence divorce rates across Israeli cities. The analysis integrates multiple public datasets, performs feature engineering, clustering, and visualizations to identify patterns related to population age, religious affiliation, and employment.
+**A comprehensive R-based data analysis project exploring the key factors contributing to divorce patterns across Israeli cities**
+
+## 🎯 Project Overview
+
+This project investigates the dominant predictors of divorce in Israel by analyzing demographic, socioeconomic, and cultural factors across Israeli municipalities. Using 2019 data (pre-COVID baseline), we employ statistical modeling and clustering techniques to understand how religious identity, ethnic composition, education, and economic factors influence family stability.
+
+### Key Research Questions
+- What are the dominant predictors of divorce in Israel?
+- How do cultural and religious factors influence divorce rates at the municipal level?
+- Can we identify distinct community types based on divorce patterns?
+
+### Why Israel?
+- High divorce rate close to OECD average
+- Rich social, religious, and demographic diversity
+- Comprehensive and accessible government data
+- Personal relevance as Israeli citizens
+
+## 📊 Dataset Description
+
+Our comprehensive dataset includes **64 features** across Israeli localities for 2019, organized into three main categories:
+
+### 🏙️ General City Data
+- Population size and demographic composition
+- Age group distributions (0-6, 7-17, 18-64, 65+)
+- Ethnic breakdown (Jews, Arabs, Others)
+- Population growth/decline patterns
+
+### 💼 Socioeconomic Indicators
+- Employment and unemployment rates
+- Education levels (academic vs. non-academic)
+- Job placement statistics
+- Household economic conditions
+
+### 🗳️ Cultural Proxies
+- Voting patterns from 2019 national elections
+- Party-specific vote counts (Shas, Meretz, Likud, etc.)
+- Aggregated cultural categories:
+  - `votes_haredi` (Ultra-Orthodox)
+  - `votes_arab` (Arab parties)
+  - `votes_yemin` (Right-wing)
+  - `votes_merkaz` (Center)
+  - `votes_other`
+
+**Target Variable:** `divorces_sum` - Total number of divorces per city in 2019
+
+## 🔬 Methodology
+
+### 1. Exploratory Data Analysis
+- **City Comparison:** Initial analysis of 5 representative cities:
+  - Tel Aviv (secular, liberal)
+  - Jerusalem (mixed religious)
+  - Bnei Brak (ultra-Orthodox)
+  - Pardes Hanna-Karkur (liberal, growing)
+  - Nof HaGalil (mixed Jewish-Arab)
+
+### 2. Cultural Pattern Analysis
+- Voting behavior as cultural identity proxy
+- Boxplot analysis across different voting categories
+- Statistical comparison of divorce rates by cultural groups
+
+### 3. K-means Clustering Analysis
+- **Focus:** 30 cities closest to national median population
+- **Variables:** Arab and Jewish population proportions
+- **Result:** 3 distinct clusters with different demographic profiles:
+
+#### Cluster 1: Jewish-Majority Cities
+- **Divorce Rate:** ~1.69% (highest)
+- **Demographics:** Younger population (~35 years average)
+- **Characteristics:** Lower educational attainment
+
+#### Cluster 2: Arab-Majority Cities  
+- **Divorce Rate:** ~0.82% (lowest)
+- **Demographics:** Oldest population (~42.2 years average)
+- **Characteristics:** Highest jobseeker rate (~4.07%)
+
+#### Cluster 3: Mixed Cities
+- **Divorce Rate:** ~1.48% (moderate)
+- **Demographics:** Average age ~39.7 years
+- **Characteristics:** Mid-range employment and education
+
+## 📁 Repository Structure
+
+```
+DivorceRatesProject/
+├── Final_project.Rmd          # Main R Markdown analysis file
+├── Final_project.docx         # Complete project report
+├── README.md                  # This file
+├── data/                      # Raw data files
+│   ├── Demographic.xlsx       # Job seeker demographics
+│   ├── Population.xlsx        # City population data
+│   ├── Divorces.csv          # Annual divorce counts
+│   ├── Election.csv          # 2019 election voting data
+│   ├── Age.csv               # Age distribution by city
+│   └── Population_TJBN.csv   # Manual data for 5 key cities
+├── figures/                   # Generated visualizations
+└── results/                   # Analysis outputs
+```
+
+## 📋 Data Sources
+
+All data sourced from official Israeli government portal (gov.il) for 2019:
+
+| File | Description | Key Variables |
+|------|-------------|---------------|
+| **Demographic.xlsx** | Job seeker demographics | City ID, Month, Households, Education level |
+| **Population.xlsx** | City population breakdown | Total population, Jews, Arabs, Others |
+| **Divorces.csv** | Annual divorce statistics | City name, Total divorces, Year |
+| **Election.csv** | 2019 election results | City name, Valid votes, Party votes |
+| **Age.csv** | Age group distributions | City name, Age groups (0-6 through 65+) |
+| **Population_TJBN.csv** | Manual compilation | 5 key cities population (2015-2019) |
+
+## 🚀 Getting Started
+
+### Prerequisites
+```r
+# Required R packages
+install.packages(c(
+  "tidyverse",    # Data manipulation and visualization
+  "readxl",       # Excel file reading
+  "ggplot2",      # Advanced plotting
+  "cluster",      # Clustering algorithms
+  "clusterCrit",  # Cluster validation
+  "caret",        # Machine learning tools
+  "dplyr",        # Data manipulation
+  "knitr"         # Report generation
+))
+```
+
+### Running the Analysis
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/NaamaNigri01/DivorceRatesProject.git
+   cd DivorceRatesProject
+   ```
+
+2. **Ensure data files are in the correct location:**
+   - Place all `.xlsx`, `.csv` files in the same directory as `Final_project.Rmd`
+
+3. **Open RStudio and run the analysis:**
+   ```r
+   # Open the main file
+   file.edit("Final_project.Rmd")
+   
+   # Knit to generate the full report
+   rmarkdown::render("Final_project.Rmd")
+   ```
+
+## 📈 Key Findings
+
+### 🔍 Main Discoveries
+1. **Cultural Identity Dominates:** Religious and ethnic composition are stronger predictors of divorce rates than purely demographic factors
+2. **Ultra-Orthodox Stability:** Cities with high Haredi voting show consistently lower divorce rates
+3. **Secular Patterns:** Liberal, secular cities demonstrate higher divorce rates
+4. **Age Factor:** Older populations correlate with lower divorce rates
+5. **Education Paradox:** Higher education doesn't necessarily correlate with marriage stability
+
+### 📊 Statistical Insights
+- **Strongest Predictor:** Cultural/religious voting patterns
+- **Clustering Effectiveness:** Ethnic composition successfully segments cities into meaningful groups
+- **Cross-Validation:** Patterns consistent with international research on religion and divorce
+
+## ⚠️ Limitations & Considerations
+
+### Data Limitations
+- **Temporal Scope:** Single year (2019) limits trend analysis
+- **Underreporting:** Potential cultural stigma in certain communities
+- **Municipal Level:** Cannot capture individual/household factors
+- **Missing Data:** Some Arab-majority cities lack complete records
+
+### Methodological Considerations
+- Voting patterns may oversimplify cultural diversity within cities
+- Correlation vs. causation challenges
+- Cultural proxy variables may not capture all relevant factors
+
+## 🔮 Future Research Directions
+
+### Short-term (1 month)
+- Collect individual/household-level data
+- Interview divorce lawyers and legal aid organizations
+- Gather qualitative data on common divorce causes
+
+### Medium-term (3 months)
+- Expand to multi-year dataset (2015-2023)
+- Improve demographic indicators for underrepresented populations
+- Validate findings with longitudinal analysis
+
+### Long-term Extensions
+- International comparison with other diverse societies
+- Integration of economic indicators (income, housing costs)
+- Social media and digital behavior analysis
+
+## 📚 References
+
+1. **Lawdin** - Divorce Rates in Israel: Trends and Causes
+2. **OECD** - Marriage and Divorce Rates (2023)
+3. **Ynet** - Divorce Trends During COVID-19 (Dayan-Wolfner, 2020)
+4. **Calcalist** - Divorce Trends During Wartime (Sade, 2023)
+5. **Demographic Research** - Religion and Divorce in the US (Vermeulen et al., 2023)
 
 ---
 
-## Required R Packages
-
-The project is written in R and uses the packages below. Install them in one shot:
-
-```r
-install.packages(c(
-  "tidyverse",
-  "readxl",
-  "ggplot2",
-  "cluster",
-  "clusterCrit",
-  "caret"
-))
-tidyverse
-
-readxl
-
-ggplot2
-
-cluster
-
-clusterCrit
-
-caret
-
-Tip: for fully reproducible environments consider using renv::init() and renv::snapshot().
-
-Quick Start
-Open src/Final_project.Rmd in RStudio
-
-Ensure all data files are present in data/ with expected filenames
-
-Knit the document to produce the final report
-
-If you prefer running chunks interactively, knit step by step and verify figures are produced to docs/figures if you configure that path.
-
-Repository Structure
-bash
-Copy code
-.
-├── src/
-│   ├── Final_project.Rmd                # main analysis and visuals
-│   └── Final_project_2_try.Rmd          # additional experiments or variants
-│
-├── data/                                # input datasets used by the .Rmd files
-│   └── ...                              # see Data Sources table below
-│
-├── docs/
-│   ├── Final_Project.docx               # final written report
-│   ├── proposal.html                    # project proposal
-│   └── figures/                         # exported plots if saved to disk
-│
-├── README.md
-└── LICENSE
-Notes:
-
-Keep only data you are allowed to publish. If some sources are restricted, place them outside the repo and document the download steps.
-
-File names in code and on disk must match exactly.
-
-Methods Overview
-Feature engineering on demographic, socioeconomic, and cultural signals
-
-Clustering of cities with k-means based on population composition
-
-Comparative visualization of divorce rates across cultural profiles
-
-Model evaluation with common clustering validity criteria
-
-Results Snapshot
-Secular leaning cities show higher divorce rates on average
-
-Arab majority cities show the lowest rates
-
-Mixed cities are typically in between
-
-These are population level patterns and do not imply causality at the individual level.
-
-Running the Project
-Open src/Final_project.Rmd in RStudio
-
-Place all required data files in data/
-
-Knit to produce the report in docs/
-
-If a package is missing, install it using the command in the Required R Packages section.
-
-Data Sources and Schemas
-File name	Description	Key columns
-Demographic.xlsx	Job seekers per city and month	City ID and name, Month, Households among job seekers, Non academic
-Population.xlsx	City population counts	City name, Total population, Jews, Others, Arabs
-Divorces.csv	Annual divorces per city	locality, divorces_sum, year
-Election.csv	Votes per party by city in 2019	City name, total valid votes, per party votes used to derive cultural groups
-Age.csv	Distribution by age groups	City name, columns for age buckets from 0 to 65 plus
-Population_TJBN.csv	2015 to 2019 population for several key cities	City name, year, population
-
-Known limitations:
-
-Some cities are missing from official datasets, especially Arab majority localities
-
-Population data for five key cities was compiled manually due to missing records
-
-Reproducibility
-R version: use the latest stable R or the one used during development
-
-Consider renv for environment lock to freeze exact package versions
-
-Set a seed for stochastic steps where applicable: set.seed(123)
-
-Roadmap
-Extend analysis to multiple years for trend dynamics
-
-Enrich socioeconomic variables and improve coverage for underrepresented cities
-
-Explore models at the household or individual level where data is available and publishable
-
-Credits
-Analysis, coding, and report by the project team.
-Primary author for this repository: David Kalimi.
-See docs/proposal.html for full contributors list.
-
-License
-MIT License unless specified otherwise. Data may have its own licenses and terms. Please review the source websites before redistribution.
-
-go
-Copy code
+*This analysis contributes to understanding family dynamics and social resilience in diverse societies, with implications for public policy and social support systems.*
