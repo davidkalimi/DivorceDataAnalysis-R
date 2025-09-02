@@ -1,0 +1,381 @@
+
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(readxl)
+library(cluster)
+library(clusterCrit)
+library(caret)
+
+```
+
+```{r load-data}
+Demographic <- read_xlsx("data/Demographic.xlsx")
+Population <- read_xlsx("data/Population.xlsx")
+Divorces <- read_csv("data/Divorces.csv", show_col_types = FALSE)
+Election <- read.csv("data/Election.csv", fileEncoding = "Windows-1255", quote = "")
+Age <- read.csv("data/Age.csv", fileEncoding = "Windows-1255", quote = "")
+
+```
+
+
+```{r clean-age}
+
+age_data_clean <- Age %>% select(`שם_ישוב`, `גיל_0_6`, `גיל_6_18`, `גיל_19_45`, `גיל_46_55`, `גיל_56_64`, `גיל_65_פלוס`)
+age_data_clean <- age_data_clean %>%
+  rename(
+    City_Name = `שם_ישוב`,
+    Age_0_6 = `גיל_0_6`,
+    Age_6_18 = `גיל_6_18`,
+    Age_19_45 = `גיל_19_45`,
+    Age_46_55 = `גיל_46_55`,
+    Age_56_64 = `גיל_56_64`,
+    Age_65_plus = `גיל_65_פלוס`
+  )
+
+
+```
+
+
+```{r demographic-prossesing}
+
+Demographic_2019 <- Demographic %>% filter(str_starts(Month, "2019"))
+
+Demographic_2019_avg <- Demographic_2019 %>% group_by(`City symbol`, Name) %>%  summarise(across(where(is.numeric), mean, na.rm = TRUE), .groups = "drop")
+
+```
+
+
+
+```{r remane col}
+
+Demographic_2019_avg <- Demographic_2019_avg %>%
+  rename(City_Name = Name)
+
+Population <- Population %>%
+  rename(City_Name = `Name of Locality`)
+
+Divorces <- Divorces %>%
+  rename(City_Name = locality)
+
+Election <- Election %>%
+  rename(City_Name = שם.ישוב)
+
+```
+
+```{r vote-summarize}
+votes_by_group <- Election %>%
+  mutate(
+    votes_total = כשרים,
+    votes_haredi = rowSums(across(any_of(c("שס", "ג"))), na.rm = TRUE),
+    votes_arab   = rowSums(across(any_of(c("דעם"))), na.rm = TRUE),
+    votes_yemin = rowSums(across(any_of(c("מחל", "ל", "טב"))), na.rm = TRUE),
+    votes_merkaz = rowSums(across(any_of(c("פה"))), na.rm = TRUE),
+    votes_small = rowSums(across(any_of(c("אמת","מרצ"))), na.rm = TRUE),
+    votes_wrong = rowSums(across(any_of(c("פסולים"))), na.rm = TRUE),
+    votes_other  = votes_total - votes_haredi - votes_arab - votes_yemin - votes_merkaz - votes_small
+  ) %>%
+  group_by(City_Name) %>%
+  summarise(across(starts_with("votes"), sum, na.rm = TRUE), .groups = "drop")
+
+```
+
+
+
+```{r merge-data}
+Divorces_clean <- Divorces %>% filter(year == 2019)
+
+merged_data <- Demographic_2019_avg %>%
+  left_join(Population, by = "City_Name") %>%
+  left_join(Divorces_clean, by = "City_Name") %>%
+  left_join(votes_by_group, by = "City_Name")
+
+
+merged_data <- merged_data %>%
+  mutate(across(c(`Jews and Others`, Jews, Others, Arabs), ~ as.integer(gsub(",", "", .x)),.names = "{.col}" ))
+
+data <- merged_data %>%
+  drop_na()
+
+data <- data %>% left_join(Election, by = "City_Name")
+
+
+data$City_Name <- str_squish(data$City_Name)
+age_data_clean$City_Name <- str_squish(age_data_clean$City_Name)
+
+data <- data %>% left_join(age_data_clean, by = "City_Name")
+
+
+data <- data %>%
+  mutate(
+    estimated_mean_age = (3 * Age_0_6 + 12 * Age_6_18 + 30 * Age_19_45 + 50 * Age_46_55 + 60 * Age_56_64 + 75 * Age_65_plus) / Total)
+```
+
+```{r normalize}
+
+columns_to_normalize <- c(
+  "Total jobseekers", 
+  "Men", 
+  "Woman", 
+  "Academic", 
+  "Non academic", 
+  "Hh", 
+  "Unemployed job seekers",
+  "divorces_sum",
+  "Jews and Others",
+  "Jews",
+  "Others",
+  "Arabs",
+  "votes_total",
+  "votes_haredi",
+  "votes_arab",
+  "votes_yemin",
+  "votes_merkaz",
+  "votes_small",
+  "votes_other",
+  "votes_wrong"
+ 
+
+)
+
+data <- data %>%
+  filter(!is.na(Total), Total != 0) %>%
+  mutate(across(all_of(columns_to_normalize), ~ (.x / Total) * 100, .names = "rate_{.col}"),)
+
+
+age_vars <- c("Age_0_6", "Age_6_18", "Age_19_45", "Age_46_55", "Age_56_64", "Age_65_plus")
+
+
+data <- data %>%
+  mutate(total_age = rowSums(across(all_of(age_vars)), na.rm = TRUE)) %>%
+  mutate(across(all_of(age_vars), ~ .x / total_age, .names = "share_{.col}"))
+
+data <- data %>%
+  select(`English name`,City_Name,estimated_mean_age, Total, starts_with("rate_"))
+
+```
+
+```{r}
+
+Divorces <- read_csv("data/Divorces.csv", show_col_types = FALSE)
+Population_TJBN <- read_csv("data/Population_TJBN.csv", show_col_types = FALSE)
+
+
+Population_TJBN_long <- Population_TJBN %>%
+  pivot_longer(-year, names_to = "locality", values_to = "population") %>%
+  mutate(
+    locality = recode(locality,
+                      "jerusalem" = "Jerusalem",
+                           "tel aviv" = "Tel Aviv",
+                           "bnei brak" = "Bnei Brak",
+                           "nof hagalil" = "Nof HaGalil",
+                      "pardes_hanna" = "Pardes Hanna-Karkur")
+  )
+
+
+Divorce_data <- Divorces %>%
+  filter(locality %in% c("ירושלים", "תל אביב יפו", "בני ברק", "נוף הגליל", "פרדס חנה-כרכור")) %>%
+  mutate(locality = recode(locality,
+                           "ירושלים" = "Jerusalem",
+                           "תל אביב יפו" = "Tel Aviv",
+                           "בני ברק" = "Bnei Brak",
+                           "נוף הגליל" = "Nof HaGalil",
+                           "פרדס חנה-כרכור" = "Pardes Hanna-Karkur")) %>%
+  filter(year <= 2019) %>%
+  left_join(Population_TJBN_long, by = c("locality", "year")) %>%
+  mutate(divorces_per_1000 = divorces_sum / population * 1000)
+
+ggplot(Divorce_data, aes(x = year, y = divorces_per_1000, color = locality)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  labs(
+    title = "Divorce Rate per 1,000 People by City (up to 2019)",
+    x = "Year",
+    y = "Divorces per 1,000",
+    color = "City"
+  ) +
+  theme_minimal(base_family = "Arial")
+
+```
+
+
+```{r boxplot}
+
+
+data <- Data %>%
+  mutate(haredi_vote_group = ifelse(rate_votes_haredi > median(15, na.rm = TRUE),
+                                    "High Haredi Vote", "Low Haredi Vote"),
+         arab_vote_group = ifelse(rate_votes_arab > median(1.5, na.rm = TRUE),
+                                    "High Arab Vote", "Low Arab Vote")
+         )
+
+
+ggplot(data, aes(x = haredi_vote_group, y = rate_divorces_sum, fill = haredi_vote_group)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    title = "Divorce Rate: High Haredi Vote",
+    x = "",
+    y = "Divorce Rate"
+  ) +
+  theme_minimal()
+
+ggplot(data, aes(x = arab_vote_group, y = rate_divorces_sum, fill = arab_vote_group)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    title = "Divorce Rate: High Arab Vote",
+    x = "",
+    y = "Divorce Rate"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+
+
+```{r split30}
+median_total <- median(data$Total, na.rm = TRUE)
+
+data <- data %>% 
+  mutate(abs_diff = abs(Total - median_total)) %>% 
+  arrange(abs_diff)           %>% 
+  slice_head(n = 30)          %>% 
+  select(-abs_diff)
+
+```
+
+
+```{r clustering}
+
+clustering_data <- data %>% select(
+  `rate_Arabs`,
+  `rate_Jews and Others`) %>%
+  mutate(row_id = row_number()) %>%
+  drop_na()
+
+clustering_scaled <- scale(select(clustering_data, -row_id))
+
+set.seed(123)
+km <- kmeans(clustering_scaled, centers = 3)
+
+clustering_data$cluster <- km$cluster
+
+data_with_clusters <- data %>%
+  mutate(row_id = row_number()) %>%
+  inner_join(select(clustering_data, row_id, cluster), by = "row_id")
+
+
+
+```
+
+
+
+```{r cluster-statistic}
+
+
+# Silhouette
+sil <- silhouette(km$cluster, dist(clustering_scaled))
+sil_mean <- mean(sil[, "sil_width"])
+
+# Pseudo R² 
+totss <- km$totss              
+withinss <- km$tot.withinss    
+betweenss <- km$betweenss      
+pseudo_r2 <- betweenss / totss
+
+# Calinski–Harabasz Index
+ch_index <- intCriteria(traj = clustering_scaled,
+                        part = as.integer(km$cluster),
+                        crit = "Calinski_Harabasz")$calinski_harabasz
+
+# Davies–Bouldin Index
+db_index <- intCriteria(traj = clustering_scaled,
+                        part = as.integer(km$cluster),
+                        crit = "Davies_Bouldin")$davies_bouldin
+
+metrics_summary <- tibble::tibble(
+  Metric = c("Silhouette (mean)", "Pseudo R²", 
+             "Calinski-Harabasz Index", "Davies-Bouldin Index"),
+  Value = c(sil_mean, pseudo_r2, ch_index, db_index)
+)
+
+metrics_summary
+
+
+```
+
+```{r clustering summary}
+
+cluster_summary <- data_with_clusters %>%
+  group_by(cluster) %>%
+  summarise(
+    mean_rate_divorces   = mean(rate_divorces_sum,            na.rm = TRUE),
+    mean_age   = mean(estimated_mean_age,            na.rm = TRUE),
+    mean_rate_jobseekers = mean(`rate_Total jobseekers`, na.rm = TRUE),
+    mean_Hh = mean(rate_Hh, na.rm = TRUE),
+    mean_rate_Academic = mean(rate_Academic, na.rm = TRUE),
+    mean_rate_Age_0_18 = mean((rate_Age_0_6 + rate_Age_6_18), na.rm = TRUE),
+    
+    .groups = "drop"
+  )
+
+
+cluster_summary
+```
+
+```{r clustering plot}
+cluster_long <- cluster_summary %>%
+  pivot_longer(
+    cols = -cluster,
+    names_to = "feature",
+    values_to = "value"
+  )
+
+
+cluster_long$feature <- recode(cluster_long$feature,
+  mean_age = "Mean Age",
+  mean_rate_jobseekers = "Jobseeker Rate (%)",
+  mean_rate_divorces = "Divorce Rate (%)",
+  mean_Hh = "Mean Household (%)",
+  mean_rate_Academic = "Mean Academic Rate (%)",
+  mean_age_0_18 = "Children Rate 0-18 (%)"
+)
+
+
+ggplot(cluster_long, aes(x = factor(cluster), y = value, fill = factor(cluster))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ feature, scales = "free_y") +
+  labs(
+    x = "Cluster",
+    y = "Average Value"
+  ) +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
