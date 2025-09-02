@@ -28,7 +28,7 @@ Data from multiple government sources (demographics, voting, population) is merg
 ![Voting Boxplots](figures/voting_patterns_boxplot.png)
 
 📜 **Main Analysis Script:**  
-→ [Final_project.Rmd](Final_project.Rmd)
+→ [Final_project.Rmd](src/Final_project.Rmd)
 
 📜 **Complete Report:**  
 → [Final_project.docx](Final_project.docx)
