@@ -31,7 +31,7 @@ Data from multiple government sources (demographics, voting, population) is merg
 → [Final_project.Rmd](src/Final_project.Rmd)
 
 📜 **Complete Report:**  
-→ [Final_project.docx](Final_project.docx)
+→ [Final_project.docx](docs/Final_project.docx)
 
 ---
 
@@ -126,6 +126,3 @@ rmarkdown::render("Final_project.Rmd")
 
 ---
 
-## 📁 Repository
-- **📂 Code**: [GitHub Repository](https://github.com/NaamaNigri01/DivorceRatesProject)
-- **💾 Data**: [Google Drive Folder](https://drive.google.com/drive/folders/1lDg3He8peEky0_dCqKqRCU_FWzsmPqsC)
