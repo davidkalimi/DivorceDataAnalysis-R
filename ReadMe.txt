@@ -1,100 +1,132 @@
+# Divorce Data Analysis in R
 
-## Project Description
+This project explores the demographic, socioeconomic, and cultural factors that influence divorce rates across Israeli cities. The analysis integrates multiple public datasets, performs feature engineering, clustering, and visualizations to identify patterns related to population age, religious affiliation, and employment.
 
-This project explores the demographic and cultural factors influencing divorce rates across Israeli cities. The analysis integrates multiple public datasets, performs feature engineering, clustering, and visualizations to identify patterns related to population age, religious affiliation, and socioeconomic status.
-
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-
-## Running the Project
-
-1. Open `Final_project.Rmd` in RStudio.
-2. Make sure all data files are placed in the same folder as the `.Rmd` file.
-3. Knit the document to produce the report.
+---
 
 ## Required R Packages
 
-- tidyverse
-- readxl
-- ggplot2
-- cluster
-- clusterCrit
-- caret
+The project is written in R and uses the packages below. Install them in one shot:
 
-Use `install.packages("packagename")` to install any missing packages.
+```r
+install.packages(c(
+  "tidyverse",
+  "readxl",
+  "ggplot2",
+  "cluster",
+  "clusterCrit",
+  "caret"
+))
+tidyverse
 
-----------------------------------------------------------------------
-----------------------------------------------------------------------
+readxl
 
-## Notes
+ggplot2
 
-- Some cities are missing from official datasets, especially Arab-majority cities.
-- Population data for 5 key cities was compiled manually due to missing records.
+cluster
 
+clusterCrit
 
-----------------------------------------------------------------------
-----------------------------------------------------------------------
+caret
 
-‫##‬ Repository Structure 
+Tip: for fully reproducible environments consider using renv::init() and renv::snapshot().
 
+Quick Start
+Open src/Final_project.Rmd in RStudio
 
-Final_progect.Rmd - Cleaning and merging data from multiple sources. Performing k-means clustering and analysis Creating summary graphs and boxplots
+Ensure all data files are present in data/ with expected filenames
 
-Final_progect.docx - Final project report (methods, figures, interpretations)
+Knit the document to produce the final report
 
+If you prefer running chunks interactively, knit step by step and verify figures are produced to docs/figures if you configure that path.
 
-‫**‬ Data Sources
+Repository Structure
+bash
+Copy code
+.
+├── src/
+│   ├── Final_project.Rmd                # main analysis and visuals
+│   └── Final_project_2_try.Rmd          # additional experiments or variants
+│
+├── data/                                # input datasets used by the .Rmd files
+│   └── ...                              # see Data Sources table below
+│
+├── docs/
+│   ├── Final_Project.docx               # final written report
+│   ├── proposal.html                    # project proposal
+│   └── figures/                         # exported plots if saved to disk
+│
+├── README.md
+└── LICENSE
+Notes:
 
-----------------------------------------------------------------------
+Keep only data you are allowed to publish. If some sources are restricted, place them outside the repo and document the download steps.
 
-Demographic.xlsx = Data on job seekers per city and month
-(info.data.gov.il)
+File names in code and on disk must match exactly.
 
-A - City symbol, Name: City ID and name
-A - Month: Date of observation
-A - Hh: Number of households among job seekers
-A - Non academic: Number of job seekers without academic education
+Methods Overview
+Feature engineering on demographic, socioeconomic, and cultural signals
 
-----------------------------------------------------------------------
+Clustering of cities with k-means based on population composition
 
-Population.xlsx = City population data	
-(info.data.gov.il)
+Comparative visualization of divorce rates across cultural profiles
 
-A - Name of Locality: City name
-A - Total: Total population
-A - Jews, Others, Arabs: Population subgroups
+Model evaluation with common clustering validity criteria
 
-----------------------------------------------------------------------
-Divorces.csv = Annual divorce counts per city 		(info.data.gov.il)
+Results Snapshot
+Secular leaning cities show higher divorce rates on average
 
-A - `locality`: City name
-A - `divorces_sum`: Total number of divorces
-A - `year`: Year of observation
+Arab majority cities show the lowest rates
 
-----------------------------------------------------------------------
+Mixed cities are typically in between
 
-Election.csv = Votes per party per city (2019)
-(info.data.gov.il)
+These are population level patterns and do not imply causality at the individual level.
 
-A  - `שם.ישוב`: City name 
-A - `כשרים`: Total valid votes
-A - Names of political parties (e.g. שס, ג, דעם, מרצ, etc.): number of votes per party (Used to create cultural group indicators (Haredi/Arab/Other))
+Running the Project
+Open src/Final_project.Rmd in RStudio
 
-----------------------------------------------------------------------
+Place all required data files in data/
 
-Age.csv = Population distribution by age group
-(info.data.gov.il)
+Knit to produce the report in docs/
 
-A - `שם_ישוב`: City name 
-A - גיל_0_6 to גיל_65_פלוס: Population count per age group
+If a package is missing, install it using the command in the Required R Packages section.
 
-----------------------------------------------------------------------
+Data Sources and Schemas
+File name	Description	Key columns
+Demographic.xlsx	Job seekers per city and month	City ID and name, Month, Households among job seekers, Non academic
+Population.xlsx	City population counts	City name, Total population, Jews, Others, Arabs
+Divorces.csv	Annual divorces per city	locality, divorces_sum, year
+Election.csv	Votes per party by city in 2019	City name, total valid votes, per party votes used to derive cultural groups
+Age.csv	Distribution by age groups	City name, columns for age buckets from 0 to 65 plus
+Population_TJBN.csv	2015 to 2019 population for several key cities	City name, year, population
 
-Population_TJBN.csv = Population of Tel-Aviv, Jerusalem, Beni Brak, Nof HaGalil, Pardes Hanna-Karkur (2015-2019) 	
-(manually compiled)
+Known limitations:
 
+Some cities are missing from official datasets, especially Arab majority localities
 
+Population data for five key cities was compiled manually due to missing records
 
+Reproducibility
+R version: use the latest stable R or the one used during development
 
+Consider renv for environment lock to freeze exact package versions
 
+Set a seed for stochastic steps where applicable: set.seed(123)
 
+Roadmap
+Extend analysis to multiple years for trend dynamics
+
+Enrich socioeconomic variables and improve coverage for underrepresented cities
+
+Explore models at the household or individual level where data is available and publishable
+
+Credits
+Analysis, coding, and report by the project team.
+Primary author for this repository: David Kalimi.
+See docs/proposal.html for full contributors list.
+
+License
+MIT License unless specified otherwise. Data may have its own licenses and terms. Please review the source websites before redistribution.
+
+go
+Copy code
